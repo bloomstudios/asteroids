@@ -1,5 +1,4 @@
 import "../types";
-import InputController from "./input-controller";
 import Sprite from "./sprite";
 import { clamp } from "../shared/utils";
 import * as GAME_SETTINGS from "../shared/settings";
@@ -17,7 +16,31 @@ export default class ClientGame {
     this.settings = settings;
     this.stopped = false;
 
-    this.input = new InputController();
+    addEventListener("keydown", evt => {
+      const currentPlayer = this.gameState.players.find(
+        p => p.id === this.gameState.currentPlayerId
+      );
+      const keycode = evt.keyCode;
+      const { acc, rotationAcc } = settings;
+
+      if (keycode === KEYCODES.UP) currentPlayer.acc = acc;
+      if (keycode === KEYCODES.DOWN) currentPlayer.acc = -acc;
+      if (keycode === KEYCODES.RIGHT) currentPlayer.rotationAcc = rotationAcc;
+      if (keycode === KEYCODES.LEFT) currentPlayer.rotationAcc = -rotationAcc;
+    });
+
+    addEventListener("keyup", evt => {
+      const currentPlayer = this.gameState.players.find(
+        p => p.id === this.gameState.currentPlayerId
+      );
+      const keycode = evt.keyCode;
+      const { acc, rotationAcc } = settings;
+
+      if (keycode === KEYCODES.UP || keycode === KEYCODES.DOWN)
+        currentPlayer.acc = 0;
+      if (keycode === KEYCODES.RIGHT || keycode === KEYCODES.LEFT)
+        currentPlayer.rotationAcc = 0;
+    });
 
     this.canvas = canvas;
     this.canvas.width = settings.cameraWidth;
@@ -42,19 +65,6 @@ export default class ClientGame {
     const currentPlayer = state.players.find(
       p => p.id === state.currentPlayerId
     );
-
-    const isPressingUp = this.input.isPressing(KEYCODES.UP);
-    const isPressingDown = this.input.isPressing(KEYCODES.DOWN);
-    const isPressingRight = this.input.isPressing(KEYCODES.RIGHT);
-    const isPressingLeft = this.input.isPressing(KEYCODES.LEFT);
-    if (isPressingUp || isPressingDown)
-      currentPlayer.acc = isPressingUp ? settings.acc : -settings.acc;
-    else currentPlayer.acc = 0;
-    if (isPressingRight || isPressingLeft)
-      currentPlayer.rotationAcc = isPressingRight
-        ? settings.rotationAcc
-        : -settings.rotationAcc;
-    else currentPlayer.rotationAcc = 0;
 
     update(state, progress, this.settings);
   }
