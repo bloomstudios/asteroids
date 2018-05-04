@@ -27,6 +27,8 @@ function getInitialState() {
  * @param {string} token
  */
 export function onRequestPlay(token) {
+  const respawnMenu = document.getElementById("respawnMenu");
+  respawnMenu.style.display = "none";
   socket.send(`USER_CONNECTED#${token}`);
   let isPressed = {};
   addEventListener("keydown", evt => {
@@ -63,7 +65,6 @@ export function onRequestPlay(token) {
     REMOVE_PLAYER: content => {
       const id = parseInt(content);
       if (id === gameState.currentPlayerId) {
-        const respawnMenu = document.getElementById("respawnMenu");
         const respawnButton = document.getElementById("respawnBtn");
         respawnMenu.style.display = "block";
         respawnButton.addEventListener("click", () => onRequestPlay(token));
