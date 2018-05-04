@@ -16,31 +16,8 @@ export default class ClientGame {
     this.settings = settings;
     this.stopped = false;
 
-    addEventListener("keydown", evt => {
-      const currentPlayer = this.gameState.players.find(
-        p => p.id === this.gameState.currentPlayerId
-      );
-      const keycode = evt.keyCode;
-      const { acc, rotationAcc } = settings;
-
-      if (keycode === KEYCODES.UP) currentPlayer.acc = acc;
-      if (keycode === KEYCODES.DOWN) currentPlayer.acc = -acc;
-      if (keycode === KEYCODES.RIGHT) currentPlayer.rotationAcc = rotationAcc;
-      if (keycode === KEYCODES.LEFT) currentPlayer.rotationAcc = -rotationAcc;
-    });
-
-    addEventListener("keyup", evt => {
-      const currentPlayer = this.gameState.players.find(
-        p => p.id === this.gameState.currentPlayerId
-      );
-      const keycode = evt.keyCode;
-      const { acc, rotationAcc } = settings;
-
-      if (keycode === KEYCODES.UP || keycode === KEYCODES.DOWN)
-        currentPlayer.acc = 0;
-      if (keycode === KEYCODES.RIGHT || keycode === KEYCODES.LEFT)
-        currentPlayer.rotationAcc = 0;
-    });
+    addEventListener("keydown", this.onKeyDown.bind(this));
+    addEventListener("keyup", this.onKeyUp.bind(this));
 
     this.canvas = canvas;
     this.canvas.width = settings.cameraWidth;
@@ -67,6 +44,38 @@ export default class ClientGame {
     );
 
     update(state, progress, this.settings);
+  }
+
+  /** @param {KeyboardEvent} evt */
+  onKeyUp(evt) {
+    const { gameState, settings } = this;
+    const currentPlayer = gameState.players.find(
+      p => p.id === gameState.currentPlayerId
+    );
+    const keycode = evt.keyCode;
+    const { acc, rotationAcc } = settings;
+
+    if (keycode === KEYCODES.UP || keycode === KEYCODES.DOWN)
+      currentPlayer.acc = 0;
+    if (keycode === KEYCODES.RIGHT || keycode === KEYCODES.LEFT)
+      currentPlayer.rotationAcc = 0;
+  }
+
+  /** @param {KeyboardEvent} evt */
+  onKeyDown(evt) {
+    const { gameState, settings } = this;
+    const currentPlayer = gameState.players.find(
+      p => p.id === gameState.currentPlayerId
+    );
+    if (currentPlayer) {
+      const keycode = evt.keyCode;
+      const { acc, rotationAcc } = settings;
+
+      if (keycode === KEYCODES.UP) currentPlayer.acc = acc;
+      if (keycode === KEYCODES.DOWN) currentPlayer.acc = -acc;
+      if (keycode === KEYCODES.RIGHT) currentPlayer.rotationAcc = rotationAcc;
+      if (keycode === KEYCODES.LEFT) currentPlayer.rotationAcc = -rotationAcc;
+    }
   }
 
   /**
@@ -126,5 +135,7 @@ export default class ClientGame {
 
   stop() {
     this.stopped = true;
+    removeEventListener("keydown", this.onKeyDown);
+    removeEventListener("keyup", this.onKeyUp);
   }
 }
