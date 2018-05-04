@@ -16,8 +16,11 @@ export default class ClientGame {
     this.settings = settings;
     this.stopped = false;
 
-    addEventListener("keydown", this.onKeyDown.bind(this));
-    addEventListener("keyup", this.onKeyUp.bind(this));
+    this.keydownHandler = this.onKeyDown.bind(this);
+    this.keyupHandler = this.onKeyUp.bind(this);
+
+    addEventListener("keydown", this.keydownHandler);
+    addEventListener("keyup", this.keyupHandler);
 
     this.canvas = canvas;
     this.canvas.width = settings.cameraWidth;
@@ -135,7 +138,7 @@ export default class ClientGame {
 
   stop() {
     this.stopped = true;
-    removeEventListener("keydown", this.onKeyDown);
-    removeEventListener("keyup", this.onKeyUp);
+    removeEventListener("keydown", this.keydownHandler);
+    removeEventListener("keyup", this.keyupHandler);
   }
 }

@@ -5,7 +5,7 @@ import * as KEYCODES from "../shared/keycodes";
 /** @type {ClientGame} */
 let game = null;
 /** @type {GameState} */
-let gameState = getInitialState();
+let gameState = null;
 const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById(
   "game"
 ));
@@ -27,20 +27,25 @@ function getInitialState() {
  * @param {string} token
  */
 export function onRequestPlay(token) {
+  gameState = getInitialState();
   const respawnMenu = document.getElementById("respawnMenu");
   respawnMenu.style.display = "none";
   socket.send(`USER_CONNECTED#${token}`);
   let isPressed = {};
-  addEventListener("keydown", evt => {
+
+  const keydownHandler = evt => {
     if (!isPressed[evt.keyCode]) {
       isPressed[evt.keyCode] = true;
       socket.send("KEYDOWN#" + evt.keyCode);
     }
-  });
-  addEventListener("keyup", evt => {
+  };
+  const keyupHandler = evt => {
     socket.send("KEYUP#" + evt.keyCode);
     isPressed[evt.keyCode] = false;
-  });
+  };
+  addEventListener("keydown", keydownHandler);
+  addEventListener("keyup", keyupHandler);
+
   const handlers = {
     ADD_CURRENT_PLAYER: content => {
       const player = JSON.parse(content);
@@ -67,7 +72,9 @@ export function onRequestPlay(token) {
       if (id === gameState.currentPlayerId) {
         const respawnButton = document.getElementById("respawnBtn");
         respawnMenu.style.display = "block";
-        respawnButton.addEventListener("click", () => onRequestPlay(token));
+        respawnButton.onclick = () => onRequestPlay(token);
+        removeEventListener("keydown", keydownHandler);
+        removeEventListener("keyup", keyupHandler);
         game.stop();
       }
       gameState.players = gameState.players.filter(p => p.id !== id);
