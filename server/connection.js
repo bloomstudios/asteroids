@@ -66,41 +66,49 @@ module.exports = server => {
       },
       KEYDOWN: content => {
         const player = gameState.players.find(p => p.id === playerId);
-        const keycode = parseInt(content);
-        if (keycode === KEYCODES.UP) player.acc = GameSettings.acc;
-        else if (keycode === KEYCODES.DOWN) player.acc = -GameSettings.acc;
-        else if (keycode === KEYCODES.RIGHT)
-          player.rotationAcc = GameSettings.rotationAcc;
-        else if (keycode === KEYCODES.LEFT)
-          player.rotationAcc = -GameSettings.rotationAcc;
-        sockets.forEach(s => s.send("UPDATE_PLAYER#" + JSON.stringify(player)));
+        if (player) {
+          const keycode = parseInt(content);
+          if (keycode === KEYCODES.UP) player.acc = GameSettings.acc;
+          else if (keycode === KEYCODES.DOWN) player.acc = -GameSettings.acc;
+          else if (keycode === KEYCODES.RIGHT)
+            player.rotationAcc = GameSettings.rotationAcc;
+          else if (keycode === KEYCODES.LEFT)
+            player.rotationAcc = -GameSettings.rotationAcc;
+          sockets.forEach(s =>
+            s.send("UPDATE_PLAYER#" + JSON.stringify(player))
+          );
+        }
       },
       KEYUP: content => {
         const player = gameState.players.find(p => p.id === playerId);
-        const keycode = parseInt(content);
-        if (keycode === KEYCODES.UP || keycode === KEYCODES.DOWN)
-          player.acc = 0;
-        else if (keycode === KEYCODES.RIGHT || keycode === KEYCODES.LEFT)
-          player.rotationAcc = 0;
+        if (player) {
+          const keycode = parseInt(content);
+          if (keycode === KEYCODES.UP || keycode === KEYCODES.DOWN)
+            player.acc = 0;
+          else if (keycode === KEYCODES.RIGHT || keycode === KEYCODES.LEFT)
+            player.rotationAcc = 0;
 
-        if (keycode === KEYCODES.SPACE) {
-          const { playerWidth, playerHeight } = GameSettings;
-          /** @type { Projectile } */
-          const projectile = {
-            id: currentId++,
-            x: player.x + playerWidth / 2,
-            y: player.y + playerHeight / 2,
-            xSpeed: Math.cos(player.rotation) * GameSettings.projectileSpeed,
-            ySpeed: Math.sin(player.rotation) * GameSettings.projectileSpeed,
-            playerId
-          };
-          gameState.projectiles.push(projectile);
+          if (keycode === KEYCODES.SPACE) {
+            const { playerWidth, playerHeight } = GameSettings;
+            /** @type { Projectile } */
+            const projectile = {
+              id: currentId++,
+              x: player.x + playerWidth / 2,
+              y: player.y + playerHeight / 2,
+              xSpeed: Math.cos(player.rotation) * GameSettings.projectileSpeed,
+              ySpeed: Math.sin(player.rotation) * GameSettings.projectileSpeed,
+              playerId
+            };
+            gameState.projectiles.push(projectile);
+            sockets.forEach(s =>
+              s.send("ADD_PROJECTILE#" + JSON.stringify(projectile))
+            );
+          }
+
           sockets.forEach(s =>
-            s.send("ADD_PROJECTILE#" + JSON.stringify(projectile))
+            s.send("UPDATE_PLAYER#" + JSON.stringify(player))
           );
         }
-
-        sockets.forEach(s => s.send("UPDATE_PLAYER#" + JSON.stringify(player)));
       }
     };
 
