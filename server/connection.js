@@ -14,16 +14,20 @@ module.exports = server => {
   let currentId = 1;
   let sockets = [];
 
-  game.addEventListener("REMOVE_PLAYER", ({ payload }) =>
+  game.addEventListener("REMOVE_PLAYER", ({ payload }) => {
     sockets.forEach(
       s => s.readyState === s.OPEN && s.send("REMOVE_PLAYER#" + payload.id)
-    )
-  );
-  game.addEventListener("REMOVE_PROJECTILE", ({ payload }) =>
+    );
+    gameState.players = gameState.players.filter(p => p.id !== payload.id);
+  });
+  game.addEventListener("REMOVE_PROJECTILE", ({ payload }) => {
     sockets.forEach(
       s => s.readyState === s.OPEN && s.send("REMOVE_PROJECTILE#" + payload.id)
-    )
-  );
+    );
+    gameState.projectiles = gameState.projectiles.filter(
+      p => p.id !== payload.id
+    );
+  });
 
   WebSocketServer.on("connection", socket => {
     let playerId = null;
