@@ -31,6 +31,7 @@ module.exports = server => {
 
   WebSocketServer.on("connection", socket => {
     let playerId = null;
+    sockets.push(socket);
 
     socket.on("message", onMessage);
     socket.on("close", () => {
@@ -47,7 +48,6 @@ module.exports = server => {
         playerId = currentId++;
         // @ts-ignore
         socket.playerId = playerId;
-        sockets.push(socket);
         const player = {
           id: playerId,
           x: 150,
